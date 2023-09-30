@@ -1,0 +1,29 @@
+.card {
+  margin: 20px 0px;
+  border: 2px solid;
+  font-size: 20px;
+  width: max-content;
+  display:flex;
+  justify-content: space-between;
+  background-color: lightgray;
+}
+
+/* Add some padding inside the card container */
+.container {
+padding: 2px 20px;
+}
+
+.deleteButton {
+  border: 0px;
+  height: 100%;
+}
+.taskTime {
+margin: 10px 0px;
+}
+.taskTitle {
+margin: 10px 5px 20px 2px;
+}
+.buttonContainer {
+display: flex;
+flex-direction: column;
+}

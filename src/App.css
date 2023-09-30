@@ -1,0 +1,14 @@
+.App {
+  font-size: calc(20px);
+}
+
+.headerAndTaskListContainer {
+  min-height: calc(100vh + 20px);
+}
+
+.App-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+}
