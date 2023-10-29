@@ -89,10 +89,12 @@ function App() {
   }
 
   function editItem(index) {
+    console.log(123);
     const editedTodo = prompt('Edit the todo:');
     if (editedTodo !== null && editedTodo.trim() !== '') {
       let updatedTodos = [...state.todos];
-      updatedTodos[index].value = editedTodo;
+      const todoIndex = updatedTodos.findIndex(todo => todo.id == index)
+      updatedTodos[todoIndex].value = editedTodo;
 
       setState({
         dragTodo: state.dragTodo,
