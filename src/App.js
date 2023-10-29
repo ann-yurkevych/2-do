@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -73,9 +73,6 @@ function App() {
 
     let i1 = resTodos.findIndex((x) => x.id == id1);
     let i2 = resTodos.findIndex((x) => x.id == id2);
-    console.log(resTodos);
-    console.log(id1);
-    console.log(id2);
     const value = resTodos[i1].value;
     resTodos[i1].value = resTodos[i2].value;
     resTodos[i2].value = value;
@@ -89,7 +86,6 @@ function App() {
   }
 
   function editItem(index) {
-    console.log(123);
     const editedTodo = prompt('Edit the todo:');
     if (editedTodo !== null && editedTodo.trim() !== '') {
       let updatedTodos = [...state.todos];
