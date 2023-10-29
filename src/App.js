@@ -1,119 +1,180 @@
 import './App.css';
-import AddButton from './components/AddButton';
-import { useState } from 'react';
-import TaskList from './components/TaskList';
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.css';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import InputGroup from 'react-bootstrap/InputGroup';
+import FormControl from 'react-bootstrap/FormControl';
+import ListGroup from 'react-bootstrap/ListGroup';
 
-let nextId = 2;
-
-let initialTasks = [
-  {
-    id: 0,
-    title: 'Make lunch',
-    done: false
-  },
-  {
-    id: 1,
-    title: 'Go shopping',
-    done: false
-  }
-];
+const STORAGE_ADDRESS = 'TodosData';
 
 function App() {
-  let localstorageTasks = [];
-  if (localStorage.getItem('tasks')) {
-    JSON.parse(localStorage.getItem('tasks')).forEach(task => {
-      localstorageTasks.push(task);
+  let localstorageTodos = [];
+  if (localStorage.getItem(STORAGE_ADDRESS)) {
+    JSON.parse(localStorage.getItem(STORAGE_ADDRESS)).forEach((todo) => {
+      localstorageTodos.push(todo);
     });
   }
-  else {
-    localstorageTasks = null;
-  }
-  initialTasks = localstorageTasks || initialTasks;
+  const [state, setState] = useState({
+    userInput: '',
+    todos: localstorageTodos,
+    dragTodo: null,
+  });
 
-  function sortTasks(tasks) {
-    tasks.sort((a, b) => {
-      if (a.id < b.id) {
-        return -1;
-      }
-      else if (a.id > b.id) {
-        return 1;
-      }
-      else {
-        return 0;
-      }
+  function setToStorage(todos) {
+    localStorage.setItem(STORAGE_ADDRESS, JSON.stringify(todos));
+  }
+
+  function updateInput(value) {
+    setState({
+      userInput: value,
+      todos: state.todos,
+      dragTodo: state.dragTodo,
     });
   }
-  sortTasks(initialTasks);
-  nextId = localStorage.getItem('nextId') || nextId;
-  //localStorage.clear();
-  const [tasks, setTasks] = useState(initialTasks);
 
-  function swapTasks(id1, id2) {
-    let resTasks = [...tasks];
+  function addItem() {
+    if (state.userInput !== '') {
+      const userInput = {
+        id: Math.random(),
+        value: state.userInput,
+      };
 
-    let i1 = resTasks.findIndex(x => x.id == id1);
-    let i2 = resTasks.findIndex(x => x.id == id2);
+      const todos = [...state.todos];
+      todos.push(userInput);
 
-    const id = resTasks[i1].id;
-    resTasks[i1].id = resTasks[i2].id;
-    resTasks[i2].id = id;
-
-    sortTasks(resTasks);
-
-    setTasks(
-      resTasks
-    );
-    localStorage.setItem('tasks', JSON.stringify(resTasks));
-  }
-
-  function handleAddTask(e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    const formJson = Object.fromEntries(formData.entries());
-
-    console.log(formJson.taskTime);
-
-    if (formJson.taskText === '' || !formJson.taskText) {
-      formJson.taskText = 'Do something';
+      setState({
+        dragTodo: state.dragTodo,
+        todos,
+        userInput: '',
+      });
+      setToStorage(todos);
     }
-    let resTasks = [
-      ...tasks,
-      {
-        id: nextId++,
-        title: formJson.taskText,
-        done: false
-      }
-    ]
-    setTasks(
-      resTasks
-    );
-    localStorage.setItem('tasks', JSON.stringify(resTasks));
-    localStorage.setItem('nextId', nextId);
   }
 
-  function handleDeleteTask(taskId) {
-    var remainingTasks = tasks.filter(t => t.id !== taskId);
-    setTasks(
-      remainingTasks
-    );
-    localStorage.setItem('tasks', JSON.stringify(remainingTasks));
+  function deleteItem(key) {
+    const todos = [...state.todos];
+
+    const updatetodos = todos.filter((item) => item.id !== key);
+
+    setState({
+      dragTodo: state.dragTodo,
+      todos: updatetodos,
+      userInput: state.userInput,
+    });
+    setToStorage(updatetodos);
+  }
+
+  function swapTodos(id1, id2) {
+    let resTodos = [...state.todos];
+
+    let i1 = resTodos.findIndex((x) => x.id == id1);
+    let i2 = resTodos.findIndex((x) => x.id == id2);
+    console.log(resTodos);
+    console.log(id1);
+    console.log(id2);
+    const value = resTodos[i1].value;
+    resTodos[i1].value = resTodos[i2].value;
+    resTodos[i2].value = value;
+
+    setState({
+      todos: resTodos,
+      dragTodo: state.dragTodo,
+      userInput: state.userInput,
+    });
+    setToStorage(resTodos);
+  }
+
+  function editItem(index) {
+    const editedTodo = prompt('Edit the todo:');
+    if (editedTodo !== null && editedTodo.trim() !== '') {
+      let updatedTodos = [...state.todos];
+      updatedTodos[index].value = editedTodo;
+
+      setState({
+        dragTodo: state.dragTodo,
+        todos: updatedTodos,
+        userInput: state.userInput,
+      });
+      setToStorage(updatedTodos);
+    }
+  }
+
+  function handleDragStart(e, id) {
+    e.dataTransfer.setData('text/plain', id);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+  }
+
+  function handleDrop(e, id) {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('text/plain');
+    console.log(draggedId);
+    if (draggedId !== id) {
+      swapTodos(draggedId, id);
+    }
   }
 
   return (
-    <div className="App">
-      <div className='headerAndTaskListContainer'>
-        <header className="App-header">
-          <AddButton
-            handleSubmit={handleAddTask}
-          />
-        </header>
-
-        <TaskList tasks={tasks}
-          onDelete={handleDeleteTask}
-          swapTasks={swapTasks} />
-      </div>
-    </div>
+    <Container>
+      <div style={{ height: 20 }}></div>
+      <Row>
+        <Col md={{ span: 5, offset: 4 }}>
+          <InputGroup className="mb-3">
+            <FormControl
+              placeholder="add todo ... "
+              size="lg"
+              value={state.userInput}
+              onChange={(item) => updateInput(item.target.value)}
+              aria-label="add something"
+              aria-describedby="basic-addon2"
+            />
+            <InputGroup>
+              <Button variant="dark" className="mt-2" onClick={() => addItem()}>
+                ADD
+              </Button>
+            </InputGroup>
+          </InputGroup>
+        </Col>
+      </Row>
+      <Row>
+        <Col md={{ span: 5, offset: 4 }}>
+          <ListGroup>
+            {state.todos.map((item) => (
+              <div
+                data-id={item.id}
+                key={item.id}
+                className="draggable"
+                draggable="true"
+                onDragStart={(e) => handleDragStart(e, item.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, item.id)}
+                style={{ display: 'flex', justifyContent: 'space-between' }}
+              >
+                {item.value}
+                <span>
+                  <Button
+                    style={{ marginRight: '10px' }}
+                    variant="light"
+                    onClick={() => deleteItem(item.id)}
+                  >
+                    Delete
+                  </Button>
+                  <Button variant="light" onClick={() => editItem(item.id)}>
+                    Edit
+                  </Button>
+                </span>
+              </div>
+            ))}
+          </ListGroup>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
